@@ -1,14 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { jwtVerify } from 'src/utils/jwt';
 import { pgAll } from 'src/utils/pg';
 import { IWorker } from './interfaces/worker.interface';
 
 @Injectable()
 export class WorkerService {
-  async findAll(headers: any): Promise<IWorker> {
-    const { token } = headers;
-    const { workerId } = jwtVerify(token);
-
+  async findAll(workerId: string): Promise<IWorker> {
     const findAllProject = await pgAll(
       `
     SELECT 

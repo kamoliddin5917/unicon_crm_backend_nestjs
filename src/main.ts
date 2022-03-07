@@ -9,14 +9,14 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Job Posting API')
-    .setDescription('Job Posting CRUD api')
+    .setTitle('Uchar Team CRM API')
+    .setDescription('CRM Posting CRUD api')
     .setVersion('1.0')
     .build();
 
   const doc = SwaggerModule.createDocument(app, swaggerConfig);
 
-  SwaggerModule.setup('api-route', app, doc);
+  SwaggerModule.setup('/', app, doc);
 
   app.useStaticAssets(join(__dirname, '../public'));
   app.setGlobalPrefix('api');

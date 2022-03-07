@@ -1,20 +1,38 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { LoginDTO } from './dtos/login.dto';
-// import { ILogin } from './interfaces/login.interface';
+import { ILogin } from './interfaces/login.interface';
 import { LoginService } from './login.service';
 
+@ApiTags('login')
 @Controller('login')
 export class LoginController {
   constructor(private readonly loginService: LoginService) {}
 
   @Post()
-  async login(@Body() user: LoginDTO, @Res() res: any) {
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() user: LoginDTO): Promise<ILogin> {
     try {
       const findUser = await this.loginService.login(user);
-      return res.status(200).json(findUser);
+      return findUser;
     } catch (error) {
       console.log(error);
-      return res.status(error.status).json(error);
+
+      if (
+        error.status &&
+        (error.status === 500 || error.status === 400 || error.status === 404)
+      ) {
+        throw new HttpException(error.message, error.status);
+      }
+
+      throw new HttpException('SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

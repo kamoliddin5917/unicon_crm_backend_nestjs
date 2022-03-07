@@ -1,45 +1,57 @@
-import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { UserId } from 'src/decorators/user.decorator';
 import { AdminService } from './admin.service';
-import { refDTO } from './dtos/admin.dto';
+import { AdminDTO, refDTO } from './dtos/admin.dto';
+import { IAdmin, IRefOrgUser } from './interfaces/admin.interface';
 
+@ApiTags('admin')
 @Controller('admin')
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get()
-  async findAll(@Req() req: any, @Res() res: any) {
+  async findAll(@UserId() id: string) {
     try {
-      const findAll = await this.adminService.findAll(req['headers']);
-      return res.status(200).json(findAll);
+      const findAll = await this.adminService.findAll(id);
+      return findAll;
     } catch (error) {
-      console.log(error);
-      return res.status(error.status).json(error);
+      throw new HttpException('SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   @Post('register')
-  async create(@Req() req: any, @Res() res: any) {
+  async create(@Body() user: AdminDTO, @UserId() id: string): Promise<IAdmin> {
     try {
-      const createUser = await this.adminService.create(
-        req['body'],
-        req['headers'],
-      );
-      return res.status(201).json(createUser);
+      const createUser = await this.adminService.create(user, id);
+      return createUser;
     } catch (error) {
-      console.log(error);
-      return res.status(error.status).json(error);
+      if (error.status && (error.status === 500 || error.status === 400)) {
+        throw new HttpException(error.message, error.status);
+      }
+
+      throw new HttpException('SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
   @Post('referense')
-  async refOrgUser(@Body() ref: refDTO, @Res() res: any) {
+  async refOrgUser(@Body() ref: refDTO): Promise<IRefOrgUser> {
     try {
       const refOrgUser = await this.adminService.refOrgUser(ref);
-      return res.status(201).json(refOrgUser);
+      return refOrgUser;
     } catch (error) {
-      console.log(error);
+      if (error.status && (error.status === 500 || error.status === 400)) {
+        throw new HttpException(error.message, error.status);
+      }
 
-      return res.status(error.status).json(error);
+      throw new HttpException('SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

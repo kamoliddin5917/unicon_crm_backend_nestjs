@@ -1,18 +1,23 @@
-import { Controller, Get, Req, Res } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { UserId } from 'src/decorators/user.decorator';
+import { IWorker } from './interfaces/worker.interface';
 import { WorkerService } from './worker.service';
 
+@ApiTags('worker')
 @Controller('worker')
 export class WorkerController {
   constructor(private readonly workerService: WorkerService) {}
 
   @Get()
-  async findAll(@Req() req: any, @Res() res: any) {
+  async findAll(@UserId() id: string): Promise<IWorker> {
     try {
-      const findAll = await this.workerService.findAll(req['headers']);
-      return res.status(200).json(findAll);
+      const findAll = await this.workerService.findAll(id);
+      return findAll;
     } catch (error) {
       console.log(error);
-      return res.status(error.status).json(error);
+
+      throw new HttpException('SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

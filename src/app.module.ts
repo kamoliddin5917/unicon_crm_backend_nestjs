@@ -8,6 +8,7 @@ import { ProjectModule } from './project/project.module';
 import { TaskModule } from './task/task.module';
 import { WorkerModule } from './worker/worker.module';
 import { LeaderModule } from './leader/leader.module';
+import { SuperAdminModule } from './super-admin/super-admin.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { LeaderModule } from './leader/leader.module';
     TaskModule,
     WorkerModule,
     LeaderModule,
+    SuperAdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

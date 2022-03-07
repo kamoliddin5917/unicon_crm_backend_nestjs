@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { jwtVerify } from 'src/utils/jwt';
 import { pg } from 'src/utils/pg';
 import { ProjectDTO } from './dtos/project.dto';
 import { IProject } from './interfaces/project.interface';
@@ -8,12 +7,10 @@ import { IProject } from './interfaces/project.interface';
 export class ProjectService {
   async create(
     project: ProjectDTO,
-    headers: any,
+    leaderId: string,
     medias: string[],
   ): Promise<IProject> {
     const { name, orgId } = project;
-    const { token } = headers;
-    const { leaderId } = jwtVerify(token);
 
     if (!name || !orgId) {
       throw new HttpException(

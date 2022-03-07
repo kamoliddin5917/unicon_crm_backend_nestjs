@@ -1,17 +1,19 @@
-import { Controller, Get, Req, Res } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { UserId } from 'src/decorators/user.decorator';
 import { LeaderService } from './leader.service';
 
+@ApiTags('leader')
 @Controller('leader')
 export class LeaderController {
   constructor(private readonly leaderService: LeaderService) {}
   @Get()
-  async findAll(@Req() req: any, @Res() res: any) {
+  async findAll(@UserId() id: string) {
     try {
-      const findAll = await this.leaderService.findAll(req['headers']);
-      return res.status(200).json(findAll);
+      const findAll = await this.leaderService.findAll(id);
+      return findAll;
     } catch (error) {
-      console.log(error);
-      return res.status(error.status).json(error);
+      throw new HttpException('SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

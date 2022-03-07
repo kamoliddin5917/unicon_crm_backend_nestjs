@@ -18,7 +18,7 @@ export class AuthAdminMiddleware implements NestMiddleware {
         throw new HttpException('Not token', HttpStatus.FORBIDDEN);
       }
 
-      req[adminId] = adminId;
+      req['adminId'] = adminId;
 
       next();
     } catch (error) {

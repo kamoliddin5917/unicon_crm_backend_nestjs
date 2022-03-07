@@ -1,15 +1,21 @@
 import {
+  Body,
   Controller,
+  HttpException,
+  HttpStatus,
   Post,
-  Req,
-  Res,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { ApiTags } from '@nestjs/swagger';
+import { UserId } from 'src/decorators/user.decorator';
 import { multerOption } from 'src/utils/fileUpload';
+import { ProjectDTO } from './dtos/project.dto';
+import { IProject } from './interfaces/project.interface';
 import { ProjectService } from './project.service';
 
+@ApiTags('project')
 @Controller('project')
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
@@ -17,22 +23,27 @@ export class ProjectController {
   @Post()
   @UseInterceptors(FilesInterceptor('media', null, multerOption))
   async create(
-    @Req() req: any,
-    @Res() res: any,
+    @Body() project: ProjectDTO,
+    @UserId() id: string,
     @UploadedFiles() files: Array<Express.Multer.File>,
-  ) {
+  ): Promise<IProject> {
     try {
       const medias = files.map((file) => file.filename);
 
       const createProject = await this.projectService.create(
-        req['body'],
-        req['headers'],
+        project,
+        id,
         medias,
       );
-      return res.status(201).json(createProject);
+      return createProject;
     } catch (error) {
       console.log(error);
-      return res.status(error.status).json(error);
+
+      if (error.status && (error.status === 500 || error.status === 400)) {
+        throw new HttpException(error.message, error.status);
+      }
+
+      throw new HttpException('SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

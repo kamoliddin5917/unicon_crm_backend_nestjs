@@ -1,15 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { jwtVerify } from 'src/utils/jwt';
 import { pg } from 'src/utils/pg';
 import { TaskDTO } from './dtos/task.dto';
 import { ITask } from './interfaces/task.interface';
 
 @Injectable()
 export class TaskService {
-  async create(task: TaskDTO, headers: any): Promise<ITask> {
+  async create(task: TaskDTO, leaderId: string): Promise<ITask> {
     const { name, time, projectId, workerId } = task;
-    const { token } = headers;
-    const { leaderId } = jwtVerify(token);
 
     if (!name || !time || !projectId || !workerId) {
       throw new HttpException(

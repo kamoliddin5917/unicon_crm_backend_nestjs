@@ -18,7 +18,7 @@ export class AuthWorkerMiddleware implements NestMiddleware {
         throw new HttpException('Not token', HttpStatus.FORBIDDEN);
       }
 
-      req[workerId] = workerId;
+      req['workerId'] = workerId;
 
       next();
     } catch (error) {

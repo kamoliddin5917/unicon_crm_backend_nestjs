@@ -1,28 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { jwtVerify } from 'src/utils/jwt';
 import { pgAll } from 'src/utils/pg';
 import { ILeader } from './interfaces/leader.interface';
+import knex from '../utils/knex';
 
 @Injectable()
 export class LeaderService {
-  async findAll(headers: any): Promise<ILeader> {
-    const { token } = headers;
-    const { leaderId } = jwtVerify(token);
-
-    const findAllProject = await pgAll(
-      `
-    SELECT
-        project_id AS id,
-        project_name AS name,
-        project_medias AS medias,
-        project_leader AS created_by,
-        project_org AS org_id,
-        project_date AS created_at
-    FROM projects
-    WHERE project_leader = $1
-    `,
-      [leaderId],
-    );
+  async findAll(leaderId: string): Promise<ILeader> {
+    const findAllProject = await knex.instance
+      .select(
+        knex.instance.raw(`
+    project_id AS id,
+    project_name AS name,
+    project_medias AS medias,
+    project_leader AS created_by,
+    project_org AS org_id,
+    project_date AS created_at
+    `),
+      )
+      .from(`projects`)
+      .where(`project_leader`, leaderId);
 
     const findAllTask = await pgAll(
       `

@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { jwtVerify } from 'src/utils/jwt';
 import { pg } from 'src/utils/pg';
 import { OrganisationDTO } from './dtos/organisation.dto';
 import { IOrganisation } from './interfaces/organisation.dto';
@@ -8,12 +7,10 @@ import { IOrganisation } from './interfaces/organisation.dto';
 export class OrganisationService {
   async create(
     organisation: OrganisationDTO,
-    headers: any,
+    adminId: string,
     image: string,
   ): Promise<IOrganisation> {
     const { name } = organisation;
-    const { token } = headers;
-    const { adminId } = jwtVerify(token);
 
     if (!name) {
       throw new HttpException('NOT NAME', HttpStatus.BAD_REQUEST);

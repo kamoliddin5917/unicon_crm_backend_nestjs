@@ -1,16 +1,21 @@
 import {
+  Body,
   Controller,
+  HttpException,
+  HttpStatus,
   Post,
-  Req,
-  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags } from '@nestjs/swagger';
+import { UserId } from 'src/decorators/user.decorator';
 import { multerOption } from 'src/utils/fileUpload';
-// import { OrganisationDTO } from './dtos/organisation.dto';
+import { OrganisationDTO } from './dtos/organisation.dto';
+import { IOrganisation } from './interfaces/organisation.dto';
 import { OrganisationService } from './organisation.service';
 
+@ApiTags('organisation')
 @Controller('organisation')
 export class OrganisationController {
   constructor(private readonly organisationService: OrganisationService) {}
@@ -18,20 +23,25 @@ export class OrganisationController {
   @Post()
   @UseInterceptors(FileInterceptor('image', multerOption))
   async create(
-    @Req() req,
-    @Res() res: any,
+    @Body() organisation: OrganisationDTO,
+    @UserId() id: string,
     @UploadedFile() file: Express.Multer.File,
-  ) {
+  ): Promise<IOrganisation> {
     try {
       const createORG = await this.organisationService.create(
-        req['body'],
-        req['headers'],
+        organisation,
+        id,
         file.filename,
       );
-      return res.status(201).json(createORG);
+      return createORG;
     } catch (error) {
       console.log(error);
-      return res.status(error.status).json(error);
+
+      if (error.status && (error.status === 500 || error.status === 400)) {
+        throw new HttpException(error.message, error.status);
+      }
+
+      throw new HttpException('SERVER_ERROR', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
